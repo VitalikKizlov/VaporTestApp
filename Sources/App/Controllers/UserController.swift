@@ -12,6 +12,8 @@ struct UserController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
         let userRoutes = routes.grouped("api", "users")
         userRoutes.post(use: createHandler(_:))
+        userRoutes.get(use: getAllHabdler(_:))
+        userRoutes.get(":userID", use: getHandler(_:))
     }
     
     func createHandler(_ request: Request) throws -> EventLoopFuture<User> {
@@ -23,5 +25,8 @@ struct UserController: RouteCollection {
         return User.query(on: request.db).all()
     }
     
+    func getHandler(_ request: Request) throws -> EventLoopFuture<User> {
+        return User.find(request.parameters.get("userID"), on: request.db).unwrap(or: Abort(.notFound))
+    }
     
 }
