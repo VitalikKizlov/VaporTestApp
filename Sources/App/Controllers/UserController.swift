@@ -7,18 +7,16 @@
 
 import Vapor
 import Fluent
+import Crypto
 
 struct UserController: RouteCollection {
     func boot(routes: RoutesBuilder) throws {
         let userRoutes = routes.grouped("api", "users")
-        userRoutes.post(use: createHandler(_:))
-        userRoutes.get(use: getAllHandler(_:))
-        userRoutes.get(":userID", use: getHandler(_:))
-        userRoutes.get(":userID", "acronyms", use: getAcronymsHandler)
     }
     
     func createHandler(_ request: Request) throws -> EventLoopFuture<User> {
         let user = try request.content.decode(User.self)
+        user.passwordHash = try Bcrypt.hash(user.passwordHash)
         return user.save(on: request.db).map({ user })
     }
     
@@ -28,14 +26,6 @@ struct UserController: RouteCollection {
     
     func getHandler(_ request: Request) throws -> EventLoopFuture<User> {
         return User.find(request.parameters.get("userID"), on: request.db).unwrap(or: Abort(.notFound))
-    }
-    
-    func getAcronymsHandler(_ request: Request) throws -> EventLoopFuture<[Acronym]> {
-        return User.find(request.parameters.get("userID"), on: request.db)
-            .unwrap(or: Abort(.notFound))
-            .flatMap { (user) in
-                user.$acronyms.get(on: request.db)
-        }
     }
     
 }

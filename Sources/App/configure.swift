@@ -15,9 +15,10 @@ public func configure(_ app: Application) throws {
     ), as: .psql)
     
     app.migrations.add(CreateUser())
-    app.migrations.add(CreateAcronym())
-    app.migrations.add(CreateCategory())
-    app.migrations.add(CreateAcronymCategoryPivot())
+    app.migrations.add(CreateUserToken())
+    //app.migrations.add(CreateAcronym())
+    //app.migrations.add(CreateCategory())
+    //app.migrations.add(CreateAcronymCategoryPivot())
     app.logger.logLevel = .debug
     try app.autoMigrate().wait()
 
